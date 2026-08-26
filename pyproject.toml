@@ -16,3 +16,15 @@ dev = ["pytest>=7"]
 
 [tool.setuptools.packages.find]
 include = ["thirdomega*"]
+
+# The worker loop lives in the verified-sandbox package (`uv tool install
+# --editable`), not in this repo and not in its dependency graph. Only what
+# genuinely differs per repo is here; see that package's README for every key.
+[tool.sandbox]
+# A preregistration is worth exactly nothing if it can be amended after the
+# measurement, and its own header says "Do not amend entries." Prose in a
+# prompt is advisory, so this is the wall: the pre-commit hook refuses any
+# commit that deletes or rewrites an existing line here. Appending is fine.
+# It binds humans too, deliberately -- a worker cannot commit, but it can leave
+# an amended file in the tree for a human to commit inside a larger diff.
+append-only = ["predictions/PREREGISTRATION.md"]

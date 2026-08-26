@@ -1,4 +1,34 @@
 #!/usr/bin/env sh
+# --- append-only guard (managed by `sandbox install-hooks`) ---
+# These paths are append-only by policy. Adding lines is fine; deleting or
+# rewriting existing ones is refused -- for workers and humans alike, because
+# a worker leaves edits in the tree for a human to commit.
+for _ao_f in predictions/PREREGISTRATION.md; do
+  _ao_del="$(git diff --cached --numstat -- "$_ao_f" | awk '{print $2}')"
+  # numstat prints "-" for a binary file; only a real nonzero count is a delete.
+  case "$_ao_del" in
+    ""|0|-) ;;
+    *)
+      echo >&2 "pre-commit: refusing -- $_ao_f is append-only and this commit"
+      echo >&2 "  removes or rewrites $_ao_del existing line(s). Add a new entry,"
+      echo >&2 "  or record the result in a separate outcomes file."
+      exit 1
+      ;;
+  esac
+done
+# --- end append-only guard ---
+
+# --- sandbox guard (NOT managed by beads; keep outside the markers below) ---
+# Workers run with BEADS_ACTOR=sandbox and are told not to commit. Commits from
+# the host are unaffected: BEADS_ACTOR is only set inside the container.
+# Managed by `sandbox install-hooks`; re-run it after `bd` regenerates hooks.
+if [ "${BEADS_ACTOR:-}" = "sandbox" ]; then
+  echo >&2 "pre-commit: refusing -- BEADS_ACTOR=sandbox."
+  echo >&2 "Leave the tree dirty and put the exact git commands in your handoff."
+  echo >&2 "A human reviews and commits. This is not a bug in your bead."
+  exit 1
+fi
+# --- end sandbox guard ---
 # --- BEGIN BEADS INTEGRATION v1.1.2 ---
 # This section is managed by beads. Do not remove these markers.
 if command -v bd >/dev/null 2>&1; then
