@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "thirdomega",
+  "project_id": "9dc91d98-2c65-43ce-8c3d-c69bc39ceff5"
+}
